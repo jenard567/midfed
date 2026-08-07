@@ -11,6 +11,8 @@ const RAILWAY_URL = process.env.RAILWAY_URL || "";
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || "";
 const TURNSTILE_SITE_KEY = process.env.TURNSTILE_SITE_KEY || "";
 
+app.set("trust proxy", 1);
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
