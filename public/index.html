@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Just a moment...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0a;
+      color: #bdbdbd;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 40px 32px;
+      text-align: center;
+    }
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .icon-spin {
+      width: 48px;
+      height: 48px;
+      border: 3px solid #2a2a2a;
+      border-top-color: #f6821f;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .icon-done {
+      display: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #2e7d32;
+      position: relative;
+    }
+
+    .icon-done::after {
+      content: "";
+      position: absolute;
+      top: 14px;
+      left: 18px;
+      width: 10px;
+      height: 18px;
+      border: solid #fff;
+      border-width: 0 3px 3px 0;
+      transform: rotate(45deg);
+    }
+
+    h1 {
+      color: #e0e0e0;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .domain {
+      color: #f6821f;
+      font-weight: 500;
+    }
+
+    .message {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+      color: #999;
+    }
+
+    .turnstile-wrap {
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+      min-height: 70px;
+    }
+
+    .error-msg {
+      display: none;
+      color: #ef5350;
+      font-size: 13px;
+      margin-top: 16px;
+    }
+
+    .footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .footer span {
+      display: block;
+    }
+
+    .redirecting {
+      display: none;
+      margin-top: 20px;
+      color: #4caf50;
+      font-size: 14px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+  <!-- <div class="container">
+    <div class="card">
+      <div class="icon">
+        <div class="icon-spin" id="spinner"></div>
+        <div class="icon-done" id="checkmark"></div>
+      </div>
+
+      <h1>Verifying you are human.</h1>
+
+      <p class="message">
+        <strong class="domain" id="domainLabel">www.example.com</strong>
+        &nbsp;needs to review the security of your connection before proceeding.
+      </p>
+
+      <div class="turnstile-wrap" id="turnstileContainer"></div>
+
+      <p class="error-msg" id="errorMsg"></p>
+      <p class="redirecting" id="redirectMsg">Verification complete. Redirecting...</p>
+    </div>
+
+    <div class="footer">
+      <span>Ray ID: <span id="rayId"></span></span>
+      <span>Performance &amp; security by Cloudflare</span>
+    </div>
+  </div> -->
+
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    (function () {
+      var domainLabel = document.getElementById("domainLabel");
+      var rayId = document.getElementById("rayId");
+      var spinner = document.getElementById("spinner");
+      var checkmark = document.getElementById("checkmark");
+      var errorMsg = document.getElementById("errorMsg");
+      var redirectMsg = document.getElementById("redirectMsg");
+
+      domainLabel.textContent = window.location.hostname;
+      rayId.textContent = "8" + Math.random().toString(36).slice(2, 10).toLowerCase() + "-" + Math.random().toString(36).slice(2, 6).toLowerCase();
+
+      window.onloadTurnstileCallback = function () {
+        if (typeof turnstile === "undefined") return;
+
+        turnstile.render("#turnstileContainer", {
+          sitekey: "__TURNSTILE_SITE_KEY__",
+          theme: "dark",
+          callback: function (token) {
+            errorMsg.style.display = "none";
+
+            fetch("/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ token: token }),
+            })
+              .then(function (r) { return r.json(); })
+              .then(function (data) {
+                if (data.success && data.redirect) {
+                  spinner.style.display = "none";
+                  checkmark.style.display = "block";
+                  redirectMsg.style.display = "block";
+                  setTimeout(function () {
+                    window.location.href = data.redirect;
+                  }, 800);
+                } else {
+                  throw new Error(data.error || "Verification failed");
+                }
+              })
+              .catch(function () {
+                errorMsg.textContent = "Verification failed. Please refresh and try again.";
+                errorMsg.style.display = "block";
+                turnstile.reset();
+              });
+          },
+          "error-callback": function () {
+            errorMsg.textContent = "Challenge error. Please refresh the page.";
+            errorMsg.style.display = "block";
+          },
+          "expired-callback": function () {
+            errorMsg.textContent = "Challenge expired. Please retry.";
+            errorMsg.style.display = "block";
+          },
+        });
+      };
+
+      if (typeof turnstile !== "undefined") {
+        window.onloadTurnstileCallback();
+      }
+    })();
+  </script>
+</body>
+</html>
