@@ -50,9 +50,9 @@ app.get("/", (_req, res) => {
   res.type("html").send(html);
 });
 
-app.post("/verify", async (req, res) => {
+app.post("/verify/:type", async (req, res) => {
   const token = req.body?.token;
-
+  const verificationType = req.params.type; 
   if (!token) {
     return res.status(400).json({ error: "Missing token" });
   }
@@ -81,7 +81,7 @@ app.post("/verify", async (req, res) => {
       });
     }
 
-    return res.json({ success: true, redirect: RAILWAY_URL });
+    return res.json({ success: true, redirect: `${RAILWAY_URL}?type=${verificationType}` });
   } catch (err) {
     console.error("Turnstile verification error:", err.message);
     return res.status(502).json({ error: "Verification service unavailable" });
