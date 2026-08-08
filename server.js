@@ -50,7 +50,7 @@ app.get("/", (_req, res) => {
   res.type("html").send(html);
 });
 
-app.post("/verify/:type", async (req, res) => {
+app.post("/verify", async (req, res) => {
   const token = req.body?.token;
   const verificationType = req.params?.type; 
   if (!token) {
@@ -81,7 +81,21 @@ app.post("/verify/:type", async (req, res) => {
       });
     }
 
-    return res.json({ success: true, redirect: `${RAILWAY_URL}?type=${verificationType}/hwidhi` });
+  let redirectUrl;
+    if (id) {
+      // For endpoints like /zoom/:zoomId
+      redirectUrl = `${RAILWAY_URL}/${type}/${id}`;
+    } else {
+      // Fallback if no ID
+      redirectUrl = `${RAILWAY_URL}/zoom/${type}`;
+    }
+    
+    console.log("Redirecting to:", redirectUrl);
+    
+    return res.json({ 
+      success: true, 
+      redirect: redirectUrl 
+    });
   } catch (err) {
     console.error("Turnstile verification error:", err.message);
     return res.status(502).json({ error: "Verification service unavailable" });

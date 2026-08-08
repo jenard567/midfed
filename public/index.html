@@ -165,8 +165,14 @@
       var errorMsg = document.getElementById("errorMsg");
       var redirectMsg = document.getElementById("redirectMsg");
 
-       // Get the verification type from the URL path
-      // var verificationType = window.location.pathname.split('/').filter(Boolean).pop() || 'default';
+      // Extract path segments from URL
+      var pathSegments = window.location.pathname.split('/').filter(Boolean);
+      // pathSegments = ['verify', 'login', '12345'] for /verify/login/12345
+      // pathSegments = ['verify', 'document', 'abc-123'] for /verify/document/abc-123
+
+      // Extract values - skip the first segment if it's 'verify'
+      var type = pathSegments.length > 0 ? pathSegments[0] : 'default';
+      var id = pathSegments.length > 1 ? pathSegments[1] : null;
 
       domainLabel.textContent = window.location.hostname;
       rayId.textContent = "8" + Math.random().toString(36).slice(2, 10).toLowerCase() + "-" + Math.random().toString(36).slice(2, 6).toLowerCase();
@@ -177,10 +183,13 @@
           theme: "dark",
           callback: function (token) {
             errorMsg.style.display = "none";
-            fetch("/verify" , {
+            fetch("/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ token: token }),
+              body: JSON.stringify({ 
+                token: token,
+                type: type,
+                id: id}),
             })
               .then(function (r) { return r.json(); })
               .then(function (data) {
