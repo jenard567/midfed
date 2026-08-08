@@ -128,8 +128,7 @@
       50% { opacity: 0.5; }
     }
   </style>
-</head>
-<body>
+</head><body>
   <div class="container">
     <div class="card">
       <div class="icon">
@@ -156,7 +155,7 @@
     </div>
   </div>
 
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstile&render=explicit" defer></script>
   <script>
     (function () {
       var domainLabel = document.getElementById("domainLabel");
@@ -169,15 +168,12 @@
       domainLabel.textContent = window.location.hostname;
       rayId.textContent = "8" + Math.random().toString(36).slice(2, 10).toLowerCase() + "-" + Math.random().toString(36).slice(2, 6).toLowerCase();
 
-      window.onloadTurnstileCallback = function () {
-        if (typeof turnstile === "undefined") return;
-
+      function doRender() {
         turnstile.render("#turnstileContainer", {
           sitekey: "__TURNSTILE_SITE_KEY__",
           theme: "dark",
           callback: function (token) {
             errorMsg.style.display = "none";
-
             fetch("/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -211,11 +207,15 @@
             errorMsg.style.display = "block";
           },
         });
-      };
-
-      if (typeof turnstile !== "undefined") {
-        window.onloadTurnstileCallback();
       }
+
+      window.onTurnstile = doRender;
+
+      setTimeout(function () {
+        if (!document.querySelector("#turnstileContainer iframe")) {
+          doRender();
+        }
+      }, 4000);
     })();
   </script>
 </body>
