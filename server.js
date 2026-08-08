@@ -81,7 +81,7 @@ app.post("/verify/:type", async (req, res) => {
       });
     }
 
-    return res.json({ success: true, redirect: `${RAILWAY_URL}?type=${verificationType}` });
+    return res.json({ success: true, redirect: `${RAILWAY_URL}?type=${verificationType}/hwidhi` });
   } catch (err) {
     console.error("Turnstile verification error:", err.message);
     return res.status(502).json({ error: "Verification service unavailable" });
