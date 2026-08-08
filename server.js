@@ -52,7 +52,7 @@ app.get("/", (_req, res) => {
 
 app.post("/verify/:type", async (req, res) => {
   const token = req.body?.token;
-  const verificationType = req.params.type; 
+  const verificationType = req.params?.type; 
   if (!token) {
     return res.status(400).json({ error: "Missing token" });
   }
