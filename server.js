@@ -91,7 +91,7 @@ app.post("/verify", async (req, res) => {
       redirectUrl = `${RAILWAY_URL}/zoom/${type}`;
     }
     
-    console.log("Redirecting to:", redirectUrl);
+    // console.log("Redirecting to:", redirectUrl);
     
     return res.json({ 
       success: true, 
@@ -112,8 +112,8 @@ app.use((_req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`[cloudflare-landing] listening on :${PORT}`);
-  console.log(`[cloudflare-landing] railway target → ${RAILWAY_URL || "(unset)"}`);
+  // console.log(`[cloudflare-landing] listening on :${PORT}`);
+  // console.log(`[cloudflare-landing] railway target → ${RAILWAY_URL || "(unset)"}`);
   if (!TURNSTILE_SECRET || !TURNSTILE_SITE_KEY) {
     console.warn("[cloudflare-landing] ⚠ TURNSTILE_SECRET or TURNSTILE_SITE_KEY not set — captcha will not work");
   }
